@@ -1,0 +1,34 @@
+name: "$(BuildDefinitionName)_$(Year:yyyy).$(Month).$(DayOfMonth)_$(Rev:rr)"
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  csprojFile: "**/PlayingWithMountebankTests.csproj"
+
+steps:
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet restore"
+    inputs:
+      command: "restore"
+      projects: "${{variables.csprojFile}}"
+
+  - task: DotNetCoreCLI@2
+    displayName: "dotnet build solution"
+    inputs:
+      command: "build"
+      projects: "${{variables.csprojFile}}"
+      arguments: "--configuration Release"
+
+  - script: sudo npm install -g mountebank
+    displayName: "NPM install Mountebank"
+      
+  - script: "mb &"
+    displayName: "Run Mountebank"
+      
+  - task: DotNetCoreCLI@2
+    displayName: "Run Unit tests"
+    inputs:
+      command: "test"
+      projects: "${{variables.csprojFile}}"
+      arguments: "--configuration Release"
