@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayingWithMountebankTests", "PlayingWithMountebankTests\PlayingWithMountebankTests.csproj", "{8F4992A6-7EB2-4BBD-8BA5-535D0A1C7083}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayingWithMountebankTests", "PlayingWithMountebankTests\PlayingWithMountebankTests.csproj", "{8F4992A6-7EB2-4BBD-8BA5-535D0A1C7083}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{01A2B553-E057-4F7B-9583-F2FC11122FD6}"
+	ProjectSection(SolutionItems) = preProject
+		pipeline.yml = pipeline.yml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
