@@ -8,11 +8,11 @@ variables:
 
 steps:
   - task: UseDotNet@2
-    displayName: ".NET Core 3.1.x"
+    displayName: ".NET Core 7.x"
     inputs:
-      version: '3.1.x'
+      version: '7.x'
       packageType: sdk
-      
+
   - task: DotNetCoreCLI@2
     displayName: "dotnet restore"
     inputs:

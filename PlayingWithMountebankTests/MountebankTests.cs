@@ -1,33 +1,24 @@
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using MbDotNet;
-using MbDotNet.Enums;
-using MbDotNet.Models.Imposters;
+using MbDotNet.Models;
+using System.Net;
 using Xunit;
 
-namespace PlayingWithMountebankTests
+namespace PlayingWithMountebankTests;
+
+public sealed class MountebankTests : IAsyncDisposable
 {
-  public class MountebankTests : IDisposable
-  {
-    private const int _port = 4546;
+    private const int _port = 2525;
     private readonly Uri _localhostUri = new Uri($"http://localhost:{_port}");
 
     private readonly HttpClient _httpClient;
 
     private readonly MountebankClient _mountebankClient;
-    private readonly HttpImposter _imposter;
 
     public MountebankTests()
     {
-      _httpClient = new HttpClient { BaseAddress = _localhostUri };
+        _httpClient = new HttpClient { BaseAddress = _localhostUri };
 
-      _mountebankClient = new MountebankClient();
-
-      _mountebankClient.DeleteAllImposters();
-
-      _imposter = _mountebankClient.CreateHttpImposter(_port);
+        _mountebankClient = new MountebankClient();
     }
 
     [Theory]
@@ -35,19 +26,22 @@ namespace PlayingWithMountebankTests
     [InlineData(HttpStatusCode.InternalServerError)]
     public async Task TestStatus(HttpStatusCode statusCode)
     {
-      // Arrange
-      _imposter
-        .AddStub()
-        .OnPathAndMethodEqual("/user", Method.Get)
-        .ReturnsStatus(statusCode);
+        // Arrange
+        await _mountebankClient.DeleteAllImpostersAsync();
 
-      _mountebankClient.Submit(_imposter);
+        _ = await _mountebankClient.CreateHttpImposterAsync(_port, nameof(TestStatus), imposter =>
+        {
+            imposter
+                .AddStub()
+                .OnPathAndMethodEqual("/user", Method.Get)
+                .ReturnsStatus(statusCode);
+        });
 
-      // Act
-      using var response = await _httpClient.GetAsync("/user");
+        // Act
+        using var response = await _httpClient.GetAsync("/user");
 
-      // Assert
-      Assert.Equal(statusCode, response.StatusCode);
+        // Assert
+        Assert.Equal(statusCode, response.StatusCode);
     }
 
     [Theory]
@@ -55,41 +49,43 @@ namespace PlayingWithMountebankTests
     [InlineData(2)]
     public async Task TestJsonResponse(int id)
     {
-      // Arrange
-      string path = $"/user/{id}";
-      var user    = new User { Id = id, Name = $"Name_{id}" };
+        // Arrange
+        await _mountebankClient.DeleteAllImpostersAsync();
 
-      _imposter
-        .AddStub()
-        .OnPathAndMethodEqual(path, Method.Get)
-        .ReturnsJson(HttpStatusCode.OK, user);
+        string path = $"/user/{id}";
+        var user    = new User { Id = id, Name = $"Name_{id}" };
 
-      _mountebankClient.Submit(_imposter);
+        _ = await _mountebankClient.CreateHttpImposterAsync(_port, nameof(TestJsonResponse), imposter =>
+        {
+            imposter
+                .AddStub()
+                .OnPathAndMethodEqual(path, Method.Get)
+                .ReturnsJson(HttpStatusCode.OK, user);
+        });
 
-      // Act
-      using var response = await _httpClient.GetAsync(path);
+        // Act
+        using var response = await _httpClient.GetAsync(path);
 
-      // Assert
-      Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-      Assert.NotNull(response.Content);
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(response.Content);
 
-      User responseUser = await response.Content.ReadAsAsync<User>();
+        User responseUser = await response.Content.ReadAsAsync<User>();
 
-      Assert.Equal(user.Id, responseUser.Id);
-      Assert.Equal(user.Name, responseUser.Name);
+        Assert.Equal(user.Id, responseUser.Id);
+        Assert.Equal(user.Name, responseUser.Name);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-      _httpClient.Dispose();
+        _httpClient.Dispose();
 
-      _mountebankClient.DeleteAllImposters();
+        await _mountebankClient.DeleteAllImpostersAsync();
     }
-  }
+}
 
-  public class User
-  {
-    public int Id { get; set; }
-    public string Name { get; set; }
-  }
+public sealed class User
+{
+    public int Id { get; init; }
+    public string Name { get; init; }
 }
