@@ -1,6 +1,7 @@
 using MbDotNet;
 using MbDotNet.Models;
 using System.Net;
+using System.Net.Http.Json;
 using Xunit;
 
 namespace PlayingWithMountebankTests;
@@ -70,7 +71,7 @@ public sealed class MountebankTests : IAsyncDisposable
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(response.Content);
 
-        User responseUser = await response.Content.ReadAsAsync<User>();
+        User responseUser = await response.Content.ReadFromJsonAsync<User>();
 
         Assert.Equal(user.Id, responseUser.Id);
         Assert.Equal(user.Name, responseUser.Name);
